@@ -18,7 +18,7 @@ from io import BytesIO
 
 dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.min.css"
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css])
-# server = app.server
+server = app.server
 
 def get_latest_timestamp(path):
     files = glob.glob(path)

@@ -226,7 +226,7 @@ class CustomSensorPkgRandomSampling(Sampling):
         return X
         
 
-def plot_tradespace(combined_df:pd.DataFrame, num_results, show=False):
+def plot_tradespace(combined_df:pd.DataFrame, num_results, show=False, panzoom=False):
     
     fig = px.scatter(combined_df, x='Cost', y='Perception Coverage', color='Optimized', color_discrete_sequence=['orange', 'teal'], opacity=0.5,
                  title=f"Objective Space (best of {num_results} concepts)", 
@@ -240,6 +240,13 @@ def plot_tradespace(combined_df:pd.DataFrame, num_results, show=False):
                     mode='markers', 
                     marker=dict(symbol='star', size=12, color='gold'), 
                     name='Ideal')
+    
+    if not panzoom:
+        fig.update_layout(
+            xaxis=dict(fixedrange=True),
+            yaxis=dict(fixedrange=True)
+        )
+    
     fig.update_layout(
         hovermode='x unified',
         height=600, width=600,

@@ -9,9 +9,6 @@ from matplotlib.patches import PathPatch
 import copy
 
 import matplotlib.pyplot as plt
-import base64
-from io import BytesIO
-
 import numpy as np
 import random
 from scipy.optimize import minimize as scipy_minimize
@@ -310,29 +307,6 @@ class SimpleBot2d:
             plt.show()
         
         return fig
-    
-    def plot_bot_as_img(self, show_constraint=True, show_coverage_requirement=True, show_sensors=True, title=None):
-        """
-        Plots the robot's shape, sensor constraints, coverage requirements, and sensors on a 2D plot.
-        Parameters:
-        -----------
-        show_constraint : bool, optional
-            If True, plots the sensor pose constraints (default is True).
-        show_coverage_requirement : bool, optional
-            If True, plots the sensor coverage requirements (default is True).
-        show_sensors : bool, optional
-            If True, plots the sensors' fields of view (default is True).
-        title : str, optional
-            The title of the plot (default is None).
-        Returns:
-        --------
-        str : The base64 encoded image of the plot.
-        """
-        fig = self.plot_bot(show_constraint, show_coverage_requirement, show_sensors, title)
-        buf = BytesIO()
-        fig.savefig(buf, format='png')
-        buf.seek(0)
-        return base64.b64encode(buf.read()).decode('utf-8')
     
     def is_valid_sensor_pose(self, sensor:FOV2D, verbose=False):
         """

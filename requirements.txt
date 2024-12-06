@@ -1,0 +1,6 @@
+dash==2.6.0
+plotly
+pandas
+glob2
+dill
+matplotlib

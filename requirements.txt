@@ -1,4 +1,4 @@
-dash==2.0.0
+dash
 plotly
 shapely
 pointpats

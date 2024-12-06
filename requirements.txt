@@ -4,3 +4,4 @@ pandas
 glob2
 dill
 matplotlib
+gunicorn

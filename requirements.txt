@@ -1,5 +1,8 @@
 dash==2.6.0
 plotly
+shapely
+pointpats
+pymoo
 pandas
 glob2
 dill

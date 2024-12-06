@@ -15,7 +15,7 @@ import base64
 from io import BytesIO
 
 app = Dash(__name__)
-# server = app.server
+server = app.server
 
 def get_latest_timestamp(path):
     files = glob.glob(path)

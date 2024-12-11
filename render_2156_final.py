@@ -179,9 +179,16 @@ def create_results_section():
                         html.P(f"Hypervolume Unoptimized: {hv_unoptimized:.2f}"),
                         html.P(f"Hypervolume Optimized:   {hv_combined:.2f}"),
                         html.P(f"Hypervolume Improvement: {hv_improvement:.2f} = +{hv_improvement/hv_unoptimized *100:.2f}%"),
-                        dcc.Graph(id=f'tradespace_{folder}',figure=bot_2d_problem.plot_tradespace(combined_df, unopt_df.shape[0], width=800, height=600, title=f"Tradespace of Optimal Sensor Packages")),
-                        html.Img(id=f'bot_plot_{folder}', src='data:image/png;base64,{}'.format(bot_images[folder]['none']), width=800)
-                        ])
+                        dbc.Col([
+                            dcc.Graph(id=f'tradespace_{folder}',figure=bot_2d_problem.plot_tradespace(combined_df, unopt_df.shape[0], width=700, height=600, title=f"Tradespace of Optimal Sensor Packages")),
+                        ], xs=12, lg=6, md=6, style={'text-align': 'center'}),
+                        dbc.Col([
+                            html.Img(id=f'bot_plot_{folder}', 
+                                    src="data:image/png;base64,{}".format(base64.b64encode(open(f'./_output/{folder}/{timestamp}_botcompare_none.png', 'rb').read()).decode('ascii')), 
+                                    width=800
+                                    ),
+                        ], xs=12, lg=6, md=6, style={'text-align': 'center'})
+                    ])
         
         results_containers.append(container)
         
@@ -191,16 +198,14 @@ def create_results_section():
         )
         def update_bots(hoverData):
             # print(hoverData)
-            if hoverData is None:
-                return None
-            for point in hoverData['points']:
-                if 'customdata' in point:
-                    pkg = point['customdata'][0]
-                    try:
-                        return 'data:image/png;base64,{}'.format(bot_images[folder][pkg])
-                    except KeyError:
-                        print(f"KeyError: {pkg}")
-                        return 'data:image/png;base64,{}'.format(bot_images[folder]['none'])
+            if hoverData is not None:
+                for point in hoverData['points']:
+                    if 'customdata' in point:
+                        pkg = point['customdata'][0]
+                        try:
+                            return 'data:image/png;base64,{}'.format(bot_images[folder][pkg])
+                        except KeyError:
+                            print(f"KeyError: {pkg}")
             return 'data:image/png;base64,{}'.format(bot_images[folder]['none'])
         
     return dbc.Tabs([

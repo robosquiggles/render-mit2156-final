@@ -14,6 +14,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+import sys
 
 matplotlib.use('agg')
 plt.style.use('ggplot')
@@ -157,16 +158,29 @@ def create_methodology_section():
 
 def create_results_section():
 
+    def make_callback(folder):
+            def update_bots(hoverData):
+                # print(hoverData)
+                if hoverData is not None:
+                    for point in hoverData['points']:
+                        if 'customdata' in point:
+                            pkg = point['customdata'][0]
+                            try:
+                                return 'data:image/png;base64,{}'.format(bot_images[folder][pkg])
+                            except KeyError:
+                                print(f"KeyError: {pkg}")
+                return 'data:image/png;base64,{}'.format(bot_images[folder]['none'])
+            return update_bots
+
     bot_images = {}
     for folder, timestamp in timestamps_dict.items():
         bot_images[folder] = load_bot_images(folder, timestamp)
 
     results_containers = []
     for folder, timestamp in timestamps_dict.items():
+
         unopt_df = pd.read_pickle(f'./_output/{folder}/{timestamp}_df_unopt.pkl')
         opt_df = pd.read_pickle(f'./_output/{folder}/{timestamp}_df_opt.pkl')
-        with open(f'./_output/{folder}/{timestamp}_problem.pkl', 'rb') as file:
-            problem = dill.load(file)
 
         combined_df = pd.concat([unopt_df, opt_df])
 
@@ -174,7 +188,18 @@ def create_results_section():
         hv_combined = bot_2d_problem.get_hypervolume(opt_df, [20000, 0], x='Cost', y='Perception Coverage')
         hv_improvement = hv_combined - hv_unoptimized
 
-        container = dbc.Container([
+        results_containers.append(dbc.Container([
+            dbc.Container([
+                        html.H2(f"{folder.capitalize()} Problem"),
+                        html.P(f"The {folder.capitalize()} problem was defined with the following robot and sensors as inputs:"),
+                        dbc.Col([
+                            html.Img(id=f'inputs_{folder}', 
+                                    src="data:image/png;base64,{}".format(base64.b64encode(open(f'./_output/{folder}/{timestamp}_inputs.png', 'rb').read()).decode('ascii')), 
+                                    width=800
+                                    ),
+                        ], xs=12, lg=6, md=6, style={'text-align': 'center'}),
+                ]),
+            dbc.Container([
                         html.H2(f"{folder.capitalize()} Results"),
                         html.P(f"Hypervolume Unoptimized: {hv_unoptimized:.2f}"),
                         html.P(f"Hypervolume Optimized:   {hv_combined:.2f}"),
@@ -184,40 +209,48 @@ def create_results_section():
                         ], xs=12, lg=6, md=6, style={'text-align': 'center'}),
                         dbc.Col([
                             html.Img(id=f'bot_plot_{folder}', 
-                                    src="data:image/png;base64,{}".format(base64.b64encode(open(f'./_output/{folder}/{timestamp}_botcompare_none.png', 'rb').read()).decode('ascii')), 
                                     width=800
                                     ),
                         ], xs=12, lg=6, md=6, style={'text-align': 'center'})
                     ])
-        
-        results_containers.append(container)
-        
-        @app.callback(
-            Output(component_id=f'bot_plot_{folder}', component_property='src'),
-            Input(f'tradespace_{folder}', 'hoverData')
+                ])
         )
-        def update_bots(hoverData):
-            # print(hoverData)
-            if hoverData is not None:
-                for point in hoverData['points']:
-                    if 'customdata' in point:
-                        pkg = point['customdata'][0]
-                        try:
-                            return 'data:image/png;base64,{}'.format(bot_images[folder][pkg])
-                        except KeyError:
-                            print(f"KeyError: {pkg}")
-            return 'data:image/png;base64,{}'.format(bot_images[folder]['none'])
+
+        # Create & register the callback for the bot plot
+        update_bots = make_callback(folder)
+        app.callback(
+            Output(f'bot_plot_{folder}', 'src'),
+            Input(f'tradespace_{folder}', 'hoverData')
+        )(update_bots)
         
-    return dbc.Tabs([
-                        dbc.Tab(results_containers[i], label=folder.capitalize(), tab_id=folder) for i, folder in enumerate(timestamps_dict.keys())
-                    ])
+    return dbc.Container([
+        html.P(["Using Custom ",
+                html.B("Mixed-Variable Sensor Package Sampling", className="font-bold"),
+                f", and ",
+                html.B("Mixed Variable GA", className="font-bold"),
+                f" the process generated and optimized the following sensor package options."
+                ]),
+        html.P([html.B("Constrained Pose Optimization", className="font-bold"),
+                "was then used to optimize individual sensor placements in concepts on the pareto front, pushing them upward toward the global optimum. One example is shown below.",
+        ]),
+        html.P("The tradespace of optimal sensor packages is shown at the top, and the robot comparison plots are shown on the bottom. Hover over the tradespace (tap on mobile) to see the robot comparison plots for each concept.", className="mb-4"),
+        dbc.Tabs([
+            dbc.Tab(results_containers[i], label=folder.capitalize(), tab_id=folder) for i, folder in enumerate(timestamps_dict.keys())
+        ])
+    ])
 
 
 
 
 app.layout = html.Div([
     dbc.Container([
-        html.H1("Generation and Selection of Sensor Packages for Mobile Robots"),
+        html.Div([
+            html.Img(
+                src="data:image/png;base64,{}".format(base64.b64encode(open(f"./_artifacts/go4r.png", 'rb').read()).decode('ascii')), 
+                style={"height": 100, "marginRight": "10px"}
+            ),
+            html.H1("Generation and Selection of Sensor Packages for Mobile Robots"),
+        ], style={"display": "flex", "alignItems": "center"}),
         html.P(
                 "Rachael Putnam - MIT 2.156 Final Project",
                 className="lead",

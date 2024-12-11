@@ -557,7 +557,7 @@ class SimpleBot2d:
     def get_pkg_cost(self):
         return sum([sensor.cost for sensor in self.sensors if sensor is not None])
     
-    def optimize_sensor_placement(self, method='trust-constr', plot=False, ax=None, plot_title=None, animate=False, verbose=False):
+    def optimize_sensor_placement(self, method='trust-constr', plot=False, ax=None, plot_title=None, animate=False, anim_interval:int=100, verbose=False):
 
         results_hist = {"fun":[],
                         "x":[],
@@ -717,7 +717,7 @@ class SimpleBot2d:
             
             return fig
 
-        def animate_optimization(results:dict, interval:int=100):
+        def animate_optimization(results:dict, interval:int=anim_interval):
             """
             Animates the optimization process by plotting the bot at each iteration.
             Args:

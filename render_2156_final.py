@@ -25,6 +25,8 @@ dbc_css = "https://cdn.jsdelivr.net/gh/AnnMarieW/dash-bootstrap-templates/dbc.mi
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc_css])
 server = app.server
 
+img_width = 400
+
 def get_latest_timestamp(path):
     files = glob.glob(path)
     if len(files) == 0:
@@ -84,7 +86,7 @@ def create_motivation_section():
                 html.Img(
                     src="data:image/jpeg;base64,{}".format(base64.b64encode(open('./_artifacts/robot_fog.jpg', 'rb').read()).decode('ascii')),
                     alt="Mobile robot in harsh environment",
-                    width=400,
+                    width=img_width/2,
                     className="rounded-lg"
                 ),
                 html.P([dcc.Link("AnyMAL Robot in a foggy scene", href="https://researchfeatures.com/anymal-unique-quadruped-robot-conquering-harsh-environments/")])
@@ -114,7 +116,7 @@ def create_motivation_section():
                 html.Img(
                     src="data:image/png;base64,{}".format(base64.b64encode(open('./_artifacts/rviz.png', 'rb').read()).decode('ascii')),
                     alt="Mobile robot in harsh environment",
-                    width=400,
+                    width=img_width/2,
                     className="rounded-lg"
                 ),
                 html.P([dcc.Link("Simulation of PR2 using Gazebo in Rviz", href="https://docs.fetchrobotics.com/gazebo.html")])
@@ -146,14 +148,40 @@ def create_methodology_section():
                 html.Img(
                     src="data:image/png;base64,{}".format(base64.b64encode(open('./_artifacts/inputs_outputs.png', 'rb').read()).decode('ascii')),
                     alt="Inputs & Outputs of the Multi-Objective Optimization Process",
-                    width=400,
+                    width=img_width/2,
                     className="rounded-lg"
                 ),
                 html.P("Inputs and Outputs of the Multi-Objective Optimization Process")
             ], className="w-1/3", style={'textAlign': 'center'}),
 
         ], className="flex items-start bg-white p-6 rounded-lg shadow-md"),
-        
+
+        html.P(["Using Custom ",
+                html.B("Mixed-Variable Sensor Package Sampling", className="font-bold"),
+                f", and ",
+                html.B("Mixed Variable GA", className="font-bold"),
+                f" the process generated optimized sets of sensor package options (shown in orange in the tradespaces, below)."
+                ]),
+        html.P([html.B("Constrained Pose Optimization", className="font-bold"),
+                "was then used to optimize individual sensor placements for each concept on the pareto front, pushing them upward toward the global optimum.",
+        ]),
+        html.Div([
+            html.P("Each Constrained Pose Optimization optimization generates the following history of sensor coverage per optimization iteration. The orange points denote invalid sensor poses (i.e., the sensors intersect with eachother, or they lie partially outside the green area on the bot). Because Constrained Pose Optimization cannot guarantee that the final iteration is valid, the best option is chosen from the optimization history. Note that some packages are already optimally placed, and Constrained Pose Optimization produces no change.", className="mb-2 text-xl font-semibold text-gray-700"),
+            html.Div([
+                html.Img(
+                    src="data:image/png;base64,{}".format(base64.b64encode(open('./_artifacts/optimization.png', 'rb').read()).decode('ascii')),
+                    alt="Optimization Diagram",
+                    width=img_width,
+                    className="rounded-lg"
+                ),html.P("Example of Constrained Optimization Process History")
+            ], className="w-1/3", style={'textAlign': 'center'}),
+            html.P("The following video is an example of a single sensor package generated for Spot using constrained sensor pose optimization. Note that the sensor poses are constrained to stay to within the green areas on the bot.", className="mb-2 text-xl font-semibold text-gray-700"),
+            html.Video(
+                src="data:video/mp4;base64,{}".format(base64.b64encode(open('./_artifacts/optimization_animation.mp4', 'rb').read()).decode('ascii')),
+                controls=True,
+                style={'width': '100%', 'height': 'auto'}
+            )
+        ], className="my-4")
     ], className="max-w-4xl mx-auto my-8")
 
 def create_results_section():
@@ -195,7 +223,7 @@ def create_results_section():
                         dbc.Col([
                             html.Img(id=f'inputs_{folder}', 
                                     src="data:image/png;base64,{}".format(base64.b64encode(open(f'./_output/{folder}/{timestamp}_inputs.png', 'rb').read()).decode('ascii')), 
-                                    width=800
+                                    width=img_width
                                     ),
                         ], xs=12, lg=6, md=6, style={'text-align': 'center'}),
                 ]),
@@ -205,11 +233,11 @@ def create_results_section():
                         html.P(f"Hypervolume Optimized:   {hv_combined:.2f}"),
                         html.P(f"Hypervolume Improvement: {hv_improvement:.2f} = +{hv_improvement/hv_unoptimized *100:.2f}%"),
                         dbc.Col([
-                            dcc.Graph(id=f'tradespace_{folder}',figure=bot_2d_problem.plot_tradespace(combined_df, unopt_df.shape[0], width=700, height=600, title=f"Tradespace of Optimal Sensor Packages")),
+                            dcc.Graph(id=f'tradespace_{folder}',figure=bot_2d_problem.plot_tradespace(combined_df, unopt_df.shape[0], width=img_width, height=img_width*2/3, title=f"Tradespace of Optimal Sensor Packages")),
                         ], xs=12, lg=6, md=6, style={'text-align': 'center'}),
                         dbc.Col([
                             html.Img(id=f'bot_plot_{folder}', 
-                                    width=800
+                                    width=img_width
                                     ),
                         ], xs=12, lg=6, md=6, style={'text-align': 'center'})
                     ])
@@ -224,15 +252,6 @@ def create_results_section():
         )(update_bots)
         
     return dbc.Container([
-        html.P(["Using Custom ",
-                html.B("Mixed-Variable Sensor Package Sampling", className="font-bold"),
-                f", and ",
-                html.B("Mixed Variable GA", className="font-bold"),
-                f" the process generated and optimized the following sensor package options."
-                ]),
-        html.P([html.B("Constrained Pose Optimization", className="font-bold"),
-                "was then used to optimize individual sensor placements in concepts on the pareto front, pushing them upward toward the global optimum. One example is shown below.",
-        ]),
         html.P("The tradespace of optimal sensor packages is shown at the top, and the robot comparison plots are shown on the bottom. Hover over the tradespace (tap on mobile) to see the robot comparison plots for each concept.", className="mb-4"),
         dbc.Tabs([
             dbc.Tab(results_containers[i], label=folder.capitalize(), tab_id=folder) for i, folder in enumerate(timestamps_dict.keys())

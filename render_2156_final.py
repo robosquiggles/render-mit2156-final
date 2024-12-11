@@ -153,7 +153,7 @@ def create_methodology_section():
                 f" the process generated optimized sets of sensor package options (shown in orange in the tradespaces, below)."
                 ]),
         html.P([html.B("Constrained Pose Optimization", className="font-bold"),
-                "was then used to optimize individual sensor placements for each concept on the pareto front, pushing them upward toward the global optimum.",
+                " is then used to optimize individual sensor placements for each concept on the pareto front, pushing them upward toward the global optimum.",
         ]),
         html.Div([
             html.P("Each Constrained Pose Optimization optimization generates the following history of sensor coverage per optimization iteration. The orange points denote invalid sensor poses (i.e., the sensors intersect with eachother, or they lie partially outside the green area on the bot). Because Constrained Pose Optimization cannot guarantee that the final iteration is valid, the best option is chosen from the optimization history. Note that some packages are already optimally placed, and Constrained Pose Optimization produces no change.", className="mb-2 text-xl font-semibold text-gray-700"),
@@ -209,7 +209,7 @@ def create_results_section():
         results_containers.append(dbc.Container([
             dbc.Container([
                         html.H2(f"{folder.capitalize()} Problem"),
-                        html.P(f"The {folder.capitalize()} problem was defined with the following robot and sensors as inputs:"),
+                        html.P(f"The {folder.capitalize()} problem is defined with the following robot and sensors as inputs:"),
                         dbc.Col([
                             html.Img(id=f'inputs_{folder}', 
                                     src="data:image/png;base64,{}".format(base64.b64encode(open(f'./_output/{folder}/{timestamp}_inputs.png', 'rb').read()).decode('ascii')), 
@@ -219,9 +219,10 @@ def create_results_section():
                 ]),
             dbc.Container([
                         html.H3(f"{folder.capitalize()} Results"),
-                        html.P(f"Hypervolume Unoptimized: {hv_unoptimized:.2f}"),
-                        html.P(f"Hypervolume Optimized:   {hv_combined:.2f}"),
-                        html.P(f"Hypervolume Improvement: {hv_improvement:.2f} = +{hv_improvement/hv_unoptimized *100:.2f}%"),
+                        html.P([html.B(f"Hypervolume Unoptimized: ", className="font-bold"), f"{hv_unoptimized:.2f}"]),
+                        html.P([html.B(f"Hypervolume Optimized:   ", className="font-bold"), f"{hv_combined:.2f}"]),
+                        html.P([html.B(f"Hypervolume Improvement: ", className="font-bold"), f"{hv_improvement:.2f} = +{hv_improvement/hv_unoptimized *100:.2f}%"]),
+                        html.P("Hover over the tradespace (tap on mobile) to see the robot comparison plots for each concept.", className="mb-4"),
                         dbc.Col([
                             dcc.Graph(id=f'tradespace_{folder}',figure=bot_2d_problem.plot_tradespace(combined_df, unopt_df.shape[0], width=800, height=600, title=f"Tradespace of Optimal Sensor Packages")),
                         ], xs=12, lg=6, md=6, style={'text-align': 'center'}),
@@ -242,7 +243,6 @@ def create_results_section():
         )(update_bots)
         
     return dbc.Container([
-        html.P("The tradespace of optimal sensor packages is shown at the top, and the robot comparison plots are shown on the bottom. Hover over the tradespace (tap on mobile) to see the robot comparison plots for each concept.", className="mb-4"),
         dbc.Tabs([
             dbc.Tab(results_containers[i], label=folder.capitalize(), tab_id=folder) for i, folder in enumerate(timestamps_dict.keys())
         ])
